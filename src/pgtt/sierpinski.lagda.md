@@ -8,79 +8,83 @@ open import foundation.universe-levels
 open import foundation.identity-types
 open import foundation-core.contractible-types
 open import foundation.function-extensionality
+open import foundation.identity-truncated-types
+open import foundation.cartesian-product-types
+open import foundation.sets
 
 open import order-theory.meet-semilattices
 
 open import modal-type-theory.flat-modality
 
-module _ (@♭ l1 : Level) (@♭ I : UU l1) {l2 : Level}  where
-  is-prop-♭-Π : (X : ♭ I → UU l2)
-    → ((i : ♭ I) → is-prop (X i))
-    → is-prop ((i : ♭ I) → X i)
-  is-prop-♭-Π _ = is-prop-Π
+private
+  ϵ-♭ = counit-flat
 
-  is-prop-♭-→ : (X : UU l2) → is-prop X → is-prop (♭ I → X)
-  is-prop-♭-→ _ = is-prop-function-type
-
--- is-prop-♭-Π-implicit : {@♭ l1 : Level}
---   → {l2 : Level}
---   → {X : UU l1 → UU l2}
---   → (X-is-prop : {@♭ I : UU l1} → is-prop (X I))
---   → is-prop ({@♭ I : UU l1} → X I)
--- is-prop-♭-Π-implicit {X=X} X-is-prop = {!!}
-
-
-module _ (@♭ l1 : Level) (@♭ I : UU l1) {l2 : Level} (X : UU l2) where
-  discrete-family : UU (l1 ⊔ l2)
-  discrete-family = ♭ I → X
-
-
-module _ {l1 : Level} (X : Meet-Semilattice l1) (@♭ l2 : Level) where
-
+module _ {l1 l2 : Level} (X : Order-Theoretic-Meet-Semilattice l1 l2) (@♭ l3 : Level) where
   private
-    _≤_ = leq-Meet-Semilattice X
-    <X> = type-Meet-Semilattice X
+    _≤_ = leq-Order-Theoretic-Meet-Semilattice X
+    <X> = type-Order-Theoretic-Meet-Semilattice X
+    _∧_ = meet-Order-Theoretic-Meet-Semilattice X
 
-  -- join structure
-  join-structures : UU (l1 ⊔ lsuc l2)
-  join-structures = (@♭ I : UU l2)
-    → discrete-family l2 I <X>
+  join-structure : UU (l1 ⊔ lsuc l3)
+  join-structure =
+    (♭I : ♭ (UU l3))
+    → ((ϵ-♭ ♭I) → <X>)
     → <X>
 
-  join-is-ub : (⋁ : join-structures) → Prop (l1 ⊔ lsuc l2)
-  pr1 (join-is-ub ⋁) = (@♭ I : UU l2)
-    → (f : discrete-family l2 I <X>)
-    → (i : ♭ I)
-    → f i ≤ ⋁ I f
-  pr2 (join-is-ub ⋁) = a4 -- a4
-    where
-      a1 : (@♭ I : UU l2)
-        → (f : discrete-family l2 I <X>)
-        → (i : ♭ I) → is-prop (f i ≤ ⋁ I f)
-      a1 I f i = is-prop-leq-Meet-Semilattice X (f i) (⋁ I f)
+  module _ (⋁ : join-structure) where
 
-      a2 : (@♭ I : UU l2)
-        → (f : discrete-family l2 I <X>)
-        → is-prop ((i : ♭ I) → (f i ≤ ⋁ I f))
-      a2 I f = is-prop-Π λ i → a1 I f i
+    join-is-ub : UU (l1 ⊔ l2 ⊔ lsuc l3)
+    join-is-ub =
+      (♭I : ♭ (UU l3))
+      → (φ : (ϵ-♭ ♭I) → <X>)
+      → (i : ϵ-♭ ♭I)
+      → φ i ≤ ⋁ ♭I φ
 
-      a3 : (@♭ I : UU l2)
-        → is-prop ((f : discrete-family l2 I <X>) → (i : ♭ I) → (f i ≤ ⋁ I f))
-      a3 I = is-prop-Π (λ f → a2 I f)
+    join-is-ub-is-prop : is-prop (join-is-ub)
+    join-is-ub-is-prop =
+      is-prop-Π
+        λ ♭I → is-prop-Π
+          (λ φ → is-prop-Π
+            (λ i → is-prop-leq-Order-Theoretic-Meet-Semilattice X (φ i) (⋁ ♭I φ)))
 
-      g : (@♭ I : UU l2) → UU (l1 ⊔ l2)
-      g I = (f : discrete-family l2 I <X>)
-        → (i : ♭ I)
-        → (f i ≤ ⋁ I f)
+    join-is-least : UU (l1 ⊔ l2 ⊔ lsuc l3)
+    join-is-least =
+      (x : <X>)
+      → (♭I : ♭ (UU l3))
+      → (φ : (ϵ-♭ ♭I) → <X>)
+      → ((i : ϵ-♭ ♭I) → φ i ≤ x)
+      → ⋁ ♭I φ ≤ x
 
-      -- this requires function extensionality for Pi-types with flat domain
-      a4 : is-prop ((@♭ I : UU l2) → g I)
-      a4 = is-prop-all-elements-equal λ r s → {!!}
+    join-is-least-is-prop : is-prop (join-is-least)
+    join-is-least-is-prop =
+      is-prop-Π
+        (λ x → is-prop-Π
+          (λ ♭I → is-prop-Π
+            (λ φ → is-prop-Π
+              (λ _ → is-prop-leq-Order-Theoretic-Meet-Semilattice X (⋁ ♭I φ) x) )))
+
+    is-distributive : UU (l1 ⊔ lsuc l3)
+    is-distributive =
+      (x : <X>)
+      → (♭I : ♭ (UU l3))
+      → (φ : (ϵ-♭ ♭I) → <X>)
+      → (x ∧ (⋁ ♭I φ)) ＝ (⋁ ♭I (λ i → x ∧ (φ i)))
+
+    is-distributive-is-prop : is-prop (is-distributive)
+    is-distributive-is-prop =
+      is-prop-Π
+        (λ x → is-prop-Π
+          (λ ♭I → is-prop-Π
+            (λ φ → is-set-type-Order-Theoretic-Meet-Semilattice
+              X
+              (x ∧ ⋁ ♭I φ)
+              (⋁ ♭I (λ i → x ∧ φ i)))))
 
 
-  --                                                            --
-  -- join-is-lub : Prop {!!}                                    --
-  -- pr1 join-is-lub = {!!}                                     --
-  -- p                                                          --
-  -- r2 join-is-lub = {!!}
+module _ {l1 l2 : Level} {@♭ l3 : Level} where
+  frame : UU (lsuc l1 ⊔ lsuc l2 ⊔ lsuc l3)
+  frame =
+    Σ (Order-Theoretic-Meet-Semilattice l1 l2)
+      λ X → Σ (join-structure X l3)
+        λ ⋁ → (join-is-ub X l3 ⋁) × (join-is-least X l3 ⋁) × (is-distributive X l3 ⋁)
 ```
