@@ -14,10 +14,35 @@ open import foundation.sets
 
 open import order-theory.meet-semilattices
 
+open import modal-type-theory.crisp-identity-types
 open import modal-type-theory.flat-modality
+open import modal-type-theory.flat-discrete-crisp-types
 
 private
   ϵ-♭ = counit-flat
+
+module _ {@♭ l1 : Level} {l2 : Level} where
+
+  disctypes : UU (lsuc l1)
+  disctypes = Σ (♭ (UU l1)) f
+    where
+      f : ♭ (UU l1) → UU l1
+      f (intro-flat A) = is-flat-discrete-crisp A
+
+  h : (@♭ A : UU l1) → disctypes
+  h A = (intro-flat (♭ A)) , is-equiv-flat-counit-flat
+
+  module _ (@♭ A : UU l1) where
+    g : (@♭ u : A) → A
+    g u = u
+    relonflat : UU (l1 ⊔ lsuc l2)
+    relonflat = ♭ A → ♭ A → UU l2
+  pr : UU (lsuc l1 ⊔ lsuc l2)
+  pr = Σ (♭ (UU l1)) f
+    where
+      f : ♭ (UU l1) → UU (l1 ⊔ lsuc l2)
+      f (intro-flat A) = ♭ A → UU l2
+
 
 module _ {l1 l2 : Level} (X : Order-Theoretic-Meet-Semilattice l1 l2) (@♭ l3 : Level) where
   private

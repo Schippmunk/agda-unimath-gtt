@@ -1,5 +1,5 @@
 ```agda
-{-# OPTIONS --cohesion --flat-split #-}
+{-# OPTIONS #-}
 
 module durg.base where
 
@@ -11,8 +11,6 @@ open import foundation-core.equivalences
 open import foundation-core.invertible-maps
 open import foundation-core.dependent-identifications
 open import foundation-core.transport-along-identifications
-
--- syntax dependent-identification p b b' = b ＝⟨ p ⟩ b'
 
 implicit-dependent-identification : {l1 l2 : Level} {A : UU l1} {B : A → UU l2} {a a' : A}
   (b : B a) → (p : a ＝ a') → (b' : B a') → UU l2
